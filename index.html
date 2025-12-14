@@ -6,6 +6,16 @@
     <title>EventHub - Premier Event Management Platform</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Page separation styles */
+        .page-section {
+            display: none;
+        }
+        
+        .page-section.active {
+            display: block;
+        }
+    </style>
 </head>
 <body>
     <!-- Notification Container -->
@@ -19,10 +29,10 @@
                 <span>EventHub</span>
             </div>
             <ul class="nav-menu">
-                <li><a href="#home" class="nav-link active">Home</a></li>
-                <li><a href="#events" class="nav-link">Events</a></li>
-                <li><a href="#create" class="nav-link">Create Event</a></li>
-                <li><a href="#dashboard" class="nav-link">Dashboard</a></li>
+                <li><a href="#home" class="nav-link active" data-page="home">Home</a></li>
+                <li><a href="#events" class="nav-link" data-page="events">Events</a></li>
+                <li><a href="#create" class="nav-link" data-page="create">Create Event</a></li>
+                <li><a href="#dashboard" class="nav-link" data-page="dashboard">Dashboard</a></li>
             </ul>
             <div class="nav-actions">
                 <button class="btn-notification" id="notificationBtn">
@@ -34,8 +44,8 @@
         </nav>
     </header>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero">
+    <!-- Hero Section (HOME PAGE) -->
+    <section id="home" class="hero page-section active">
         <div class="hero-content">
             <h1 class="hero-title">Discover Amazing Events Near You</h1>
             <p class="hero-subtitle">Connect, explore, and create unforgettable experiences</p>
@@ -63,8 +73,8 @@
         </div>
     </section>
 
-    <!-- Advanced Search & Filter Section -->
-    <section id="events" class="events-section">
+    <!-- Advanced Search & Filter Section (EVENTS PAGE) -->
+    <section id="events" class="events-section page-section">
         <div class="container">
             <div class="section-header">
                 <h2>Explore Events</h2>
@@ -97,7 +107,7 @@
                     <input type="text" id="locationFilter" placeholder="City or venue...">
                 </div>
                 <div class="filter-group">
-                    <label><i class="fas fa-dollar-sign"></i> Price Range</label>
+                    <label><i class="fas fa-rupee-sign"></i> Price Range</label>
                     <div class="price-range">
                         <input type="number" id="minPrice" placeholder="Min" min="0">
                         <span>-</span>
@@ -113,8 +123,8 @@
         </div>
     </section>
 
-    <!-- Create Event Section -->
-    <section id="create" class="create-event-section">
+    <!-- Create Event Section (CREATE EVENT PAGE) -->
+    <section id="create" class="create-event-section page-section">
         <div class="container">
             <div class="section-header">
                 <h2>Create Your Event</h2>
@@ -185,7 +195,7 @@
                                     <input type="text" class="ticketName" placeholder="e.g., General Admission" required>
                                 </div>
                                 <div class="form-group">
-                                    <label>Price ($)</label>
+                                    <label>Price (₹)</label>
                                     <input type="number" class="ticketPrice" min="0" step="0.01" required>
                                 </div>
                                 <div class="form-group">
@@ -264,14 +274,14 @@
         </div>
     </section>
 
-    <!-- Dashboard Section -->
-    <section id="dashboard" class="dashboard-section">
+    <!-- Dashboard Section (DASHBOARD PAGE) -->
+    <section id="dashboard" class="dashboard-section page-section">
         <div class="container">
             <div class="section-header">
                 <h2>Event Dashboard</h2>
                 <p>Manage your events and track performance</p>
             </div>
-
+            
             <div class="dashboard-tabs">
                 <button class="tab-btn active" data-tab="myEvents">My Events</button>
                 <button class="tab-btn" data-tab="bookings">My Bookings</button>
@@ -373,7 +383,44 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+        // Page navigation functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.page-section');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all links and sections
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    sections.forEach(s => s.classList.remove('active'));
+                    
+                    // Add active class to clicked link
+                    this.classList.add('active');
+                    
+                    // Show corresponding section
+                    const pageId = this.getAttribute('data-page');
+                    const targetSection = document.getElementById(pageId);
+                    if (targetSection) {
+                        targetSection.classList.add('active');
+                    }
+                    
+                    // Scroll to top
+                    window.scrollTo(0, 0);
+                });
+            });
+            
+            // Handle hash navigation on page load
+            if (window.location.hash) {
+                const hash = window.location.hash.substring(1);
+                const targetLink = document.querySelector(`[data-page="${hash}"]`);
+                if (targetLink) {
+                    targetLink.click();
+                }
+            }
+        });
+    </script>
 </body>
 </html>
-
-
