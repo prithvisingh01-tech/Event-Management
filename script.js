@@ -298,7 +298,7 @@ function displayEvents(events) {
                     <div class="event-meta-item"><i class="fas fa-users"></i><span>${event.attendees} attendees</span></div>
                 </div>
                 <div class="event-footer">
-                    <span class="event-price">$${event.price}</span>
+                    <span class="event-price">₹${event.price}</span>
                     <button class="btn-book" onclick="event.stopPropagation(); openBookingModal(${event.id})">Book Now</button>
                 </div>
             </div>
@@ -335,7 +335,7 @@ function openEventDetail(eventId) {
             <h3><i class="fas fa-ticket-alt"></i> Tickets Available</h3>
             <div class="ticket-options">
                 ${event.tickets.map(ticket => `
-                    <div class="ticket-option"><div><strong>${ticket.type}</strong><p>$${ticket.price} • ${ticket.quantity - ticket.sold} remaining</p></div></div>
+                    <div class="ticket-option"><div><strong>${ticket.type}</strong><p>₹${ticket.price} • ${ticket.quantity - ticket.sold} remaining</p></div></div>
                 `).join('')}
             </div>
         </div>
@@ -371,7 +371,7 @@ function openBookingModal(eventId) {
             <label>Select Tickets</label>
             ${event.tickets.map((ticket, index) => `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--light); border-radius: 8px; margin-bottom: 0.5rem;">
-                    <div><strong>${ticket.type}</strong><p>$${ticket.price}</p></div>
+                    <div><strong>${ticket.type}</strong><p>₹${ticket.price}</p></div>
                     <input type="number" id="ticket_${index}" min="0" max="${ticket.quantity - ticket.sold}" value="0" style="width: 80px; padding: 0.5rem; text-align: center;" onchange="updateBookingTotal(${event.id})">
                 </div>
             `).join('')}
@@ -383,9 +383,9 @@ function openBookingModal(eventId) {
         <div class="form-group"><label>Phone</label><input type="tel" id="bookingPhone" required></div>
         <div class="form-group"><label><input type="checkbox" id="enableReminder"> Send reminder</label></div>
         <div style="margin-top: 1.5rem; padding: 1rem; background: var(--light); border-radius: 8px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"><span>Subtotal:</span><strong id="bookingSubtotal">$0.00</strong></div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; display:none;" id="discountRow"><span>Group Discount:</span><strong id="bookingDiscount">-$0.00</strong></div>
-            <div style="display: flex; justify-content: space-between; font-size: 1.2rem; border-top: 2px solid var(--accent); padding-top:0.5rem;"><span>Total:</span><strong id="bookingTotal">$0.00</strong></div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"><span>Subtotal:</span><strong id="bookingSubtotal">₹0.00</strong></div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; display:none;" id="discountRow"><span>Group Discount:</span><strong id="bookingDiscount">-₹0.00</strong></div>
+            <div style="display: flex; justify-content: space-between; font-size: 1.2rem; border-top: 2px solid var(--accent); padding-top:0.5rem;"><span>Total:</span><strong id="bookingTotal">₹0.00</strong></div>
         </div>
         <button type="button" class="btn-submit" onclick="completeBooking(${event.id})">Complete Booking</button>
     `;
@@ -406,12 +406,12 @@ function updateBookingTotal(eventId) {
     const discountRow = document.getElementById('discountRow');
     if (event.groupBooking.enabled && totalTickets >= event.groupBooking.minSize) {
         discount = subtotal * (event.groupBooking.discount / 100);
-        if(discountRow) { discountRow.style.display = 'flex'; document.getElementById('bookingDiscount').textContent = `-$${discount.toFixed(2)}`; }
+        if(discountRow) { discountRow.style.display = 'flex'; document.getElementById('bookingDiscount').textContent = `-₹${discount.toFixed(2)}`; }
     } else {
         if(discountRow) discountRow.style.display = 'none';
     }
-    document.getElementById('bookingSubtotal').textContent = `$${subtotal.toFixed(2)}`;
-    document.getElementById('bookingTotal').textContent = `$${(subtotal - discount).toFixed(2)}`;
+    document.getElementById('bookingSubtotal').textContent = `₹${subtotal.toFixed(2)}`;
+    document.getElementById('bookingTotal').textContent = `₹${(subtotal - discount).toFixed(2)}`;
 }
 
 function completeBooking(eventId) {
@@ -424,7 +424,8 @@ function completeBooking(eventId) {
         id: state.bookings.length + 1, eventId: eventId, eventTitle: event.title,
         userName: document.getElementById('bookingName').value, userEmail: document.getElementById('bookingEmail').value,
         userPhone: document.getElementById('bookingPhone').value, tickets: [],
-        total: parseFloat(totalElem.textContent.replace('$', '')), bookingDate: new Date().toISOString(), status: 'confirmed'
+        // UPDATED: Replace the Rupee sign instead of Dollar sign for parsing
+        total: parseFloat(totalElem.textContent.replace('₹', '')), bookingDate: new Date().toISOString(), status: 'confirmed'
     };
     event.tickets.forEach((ticket, index) => {
         const input = document.getElementById(`ticket_${index}`);
@@ -489,12 +490,13 @@ function displayDashboard() {
     const container = document.getElementById('dashboardEvents'); if (!container) return;
     const userEvents = state.events.filter(e => e.organizer === state.currentUser.id);
     if (userEvents.length === 0) { container.innerHTML = '<p style="text-align: center; padding: 2rem;">You haven\'t created any events yet.</p>'; return; }
-    container.innerHTML = userEvents.map(event => `<div class="dashboard-event-card"><div class="dashboard-event-info"><h3>${event.title}</h3><p>${formatDateTime(event.startDate)}</p><div class="dashboard-event-stats"><span><i class="fas fa-users"></i> ${event.attendees}</span><span><i class="fas fa-dollar-sign"></i> ${calculateRevenue(event)}</span></div></div><div class="dashboard-event-actions"><button class="btn-action" onclick="openEventDetail(${event.id})">View</button><button class="btn-action btn-danger" onclick="deleteEvent(${event.id})">Delete</button></div></div>`).join('');
+    // UPDATED: Used fa-indian-rupee-sign
+    container.innerHTML = userEvents.map(event => `<div class="dashboard-event-card"><div class="dashboard-event-info"><h3>${event.title}</h3><p>${formatDateTime(event.startDate)}</p><div class="dashboard-event-stats"><span><i class="fas fa-users"></i> ${event.attendees}</span><span><i class="fas fa-indian-rupee-sign"></i> ${calculateRevenue(event)}</span></div></div><div class="dashboard-event-actions"><button class="btn-action" onclick="openEventDetail(${event.id})">View</button><button class="btn-action btn-danger" onclick="deleteEvent(${event.id})">Delete</button></div></div>`).join('');
 }
 function displayBookings() {
     const container = document.getElementById('bookingsList'); if (!container) return;
     if (state.bookings.length === 0) { container.innerHTML = '<p style="text-align: center; padding: 2rem;">No bookings yet.</p>'; return; }
-    container.innerHTML = state.bookings.map(booking => `<div class="booking-card"><div class="booking-card-header"><h3>${booking.eventTitle}</h3><span class="booking-status confirmed">Confirmed</span></div><div class="booking-details"><p>Booked on: ${formatDate(booking.bookingDate)}</p><p>Total: $${booking.total.toFixed(2)}</p></div><button class="btn-action btn-danger" onclick="cancelBooking(${booking.id})">Cancel</button></div>`).join('');
+    container.innerHTML = state.bookings.map(booking => `<div class="booking-card"><div class="booking-card-header"><h3>${booking.eventTitle}</h3><span class="booking-status confirmed">Confirmed</span></div><div class="booking-details"><p>Booked on: ${formatDate(booking.bookingDate)}</p><p>Total: ₹${booking.total.toFixed(2)}</p></div><button class="btn-action btn-danger" onclick="cancelBooking(${booking.id})">Cancel</button></div>`).join('');
 }
 function displayAttendees() { const container = document.getElementById('attendeesList'); if (container) { const total = document.getElementById('totalAttendees'); if(total) total.textContent = "5"; container.innerHTML = `<p style="padding:1rem;">Attendee list requires backend integration.</p>`; } }
 function displayReminders() {
